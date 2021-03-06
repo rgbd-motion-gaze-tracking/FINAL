@@ -1,0 +1,17 @@
+{
+    "cSpell.words": [
+        "OPENCV",
+        "asanyarray",
+        "asarray",
+        "atexit",
+        "dlib",
+        "dlib's",
+        "numpy",
+        "pyrealsense",
+        "writetofile"
+    ],
+    "python.linting.pylintArgs": [
+        "--ignored-modules=pyrealsense2,dlib,cv2",
+        "--good-names=a,b,c,d,e,i,s,t,x,y,z,x1,y1,z1,x2,y2,z2"
+    ]
+}
