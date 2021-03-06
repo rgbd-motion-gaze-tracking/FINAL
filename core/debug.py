@@ -1,37 +1,36 @@
-##
-# Debugging and introspection utilities
-#
-# This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
-# MQP from the Worcester Polytechinc Institute.
-#
-# Copyright 2021 Nicholas Hollander <nhhollander@wpi.edu>
-#
+'''
+Debugging and introspection utilities.
+
+This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
+MQP from the Worcester Polytechnic Institute.
+
+Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
+'''
 
 import time
 import atexit
 
-funcperf_enable = True
-funcperf_writetofile = True
+FUNCPERF_ENABLE = True
+FUNCPERF_WRITETOFILE = True
 funcperf_data = dict()
 
-##
-# Measure Function Performance
-#
-# This function decorator measures the performance of the given function
-# assuming `funcperf_enable` is set to true.
 def funcperf(func):
+    '''
+    Measure Function Performance.
+
+    This function decorator records the run time of the given function assuming
+    `FUNCPERF_ENABLE` is set to `True`.
+    '''
     def wrapper(*args, **kwargs):
-        if not funcperf_enable:
+        if not FUNCPERF_ENABLE:
             return func(*args, **kwargs)
-        
         name = f"{func.__module__}.{func.__name__}"
         start = time.time()
 
         result = func(*args, **kwargs)
 
-        # Store duration
         if not name in funcperf_data:
-            funcperf_data[name] = [0,0]
+            funcperf_data[name] = [0, 0]
         funcperf_data[name][0] += time.time() - start
         funcperf_data[name][1] += 1
 
@@ -40,7 +39,9 @@ def funcperf(func):
 
 def funcperf_report():
     '''
-    Generate a function performance report. This method takes the data collected
+    Generate a function performance report.
+
+    This method takes the data collected
     by the `funcperf` decorator and prints it out as a nice table. If enabled,
     it also generates a CSV report.
     '''
@@ -77,7 +78,9 @@ def funcperf_report():
     print("\033[1mPerformance Report:\033[0m")
     line("Function", "Tot. Exec", "Calls", "Avg. Exec")
     line('-'*50, '-'*50, '-'*50, '-'*50) # Adds lines
-    asarray = [(a, funcperf_data[a][0], funcperf_data[a][1], funcperf_data[a][0]/funcperf_data[a][1]) for a in funcperf_data]
+    asarray = [
+        (a, funcperf_data[a][0], funcperf_data[a][1], funcperf_data[a][0]/funcperf_data[a][1])
+        for a in funcperf_data]
     for s in sorted(asarray, key=lambda a: a[3], reverse=True):
         line(
             s[0],
@@ -87,10 +90,14 @@ def funcperf_report():
         )
     line('-'*50, '-'*50, '-'*50, '-'*50) # Adds lines
     # Write report to file
-    if funcperf_writetofile:
+    if FUNCPERF_WRITETOFILE:
         handle = open("/tmp/funcperf.csv", "w")
         for a in funcperf_data:
-            handle.write(f"{a},{funcperf_data[a][0]},{funcperf_data[a][1]},{funcperf_data[a][0]/funcperf_data[a][1]}\n")
+            handle.write(
+                f"{a},"
+                f"{funcperf_data[a][0]},"
+                f"{funcperf_data[a][1]},"
+                f"{funcperf_data[a][0]/funcperf_data[a][1]}\n")
         handle.close()
 
 # Register the performance output

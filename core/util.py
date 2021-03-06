@@ -1,11 +1,11 @@
-##
-# Utility and Helper Methods
-#
-# This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
-# MQP from the Worcester Polytechinc Institute.
-#
-# Copyright 2021 Nicholas Hollander <nhhollander@wpi.edu>
-#
+'''
+Utility and Helper Methods.
+
+This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
+MQP from the Worcester Polytechnic Institute.
+
+Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
+'''
 
 import inspect
 from enum import Enum
@@ -36,7 +36,12 @@ def log(msg, level=Levels.INFO):
     current_frame = inspect.currentframe()
     frame = inspect.getouterframes(current_frame, 2)[-1]
     # Print a nice formatted message
-    print(f"[\033[38;5;245m{frame.filename[2:]}\033[0m:\033[32m{frame.lineno}\033[0m:\033[38;5;245m{frame.function}\033[0m][{level.value[1]}] {msg}")
+    print(
+        f"[\033[38;5;245m{frame.filename[2:]}\033[0m:"
+        f"\033[32m{frame.lineno}\033[0m:"
+        f"\033[38;5;245m{frame.function}\033[0m]"
+        f"[{level.value[1]}]"
+        f"{msg}")
 
 ##--------------##
 ## Flow Control ##
@@ -88,19 +93,28 @@ def draw_rectangle(image, pt1, pt2, color, thickness=1):
     y2 = int(pt2[1] * image.shape[0])
     cv2.rectangle(img=image, pt1=(x1, y1), pt2=(x2, y2), color=color, thickness=thickness)
 
-# TODO: Normalized coordinates????
 @debug.funcperf
-def draw_overlay(base, overlay, x, y, newimage=False):
+def draw_overlay(base, overlay, point, newimage=False, normcoords=True):
     '''
-    Overlay `overlay` onto `base` at coordinates (x,y).
+    Overlay `overlay` onto `base` at point `point`.
+
     Normally this will modify `base`, but if `newimage` is set to `True`, `base`
-    is not modified, and the modified image is returned.
+    is not modified, and the modified image is returned. If `normcoords` is set
+    to `True`, the method accepts normalized (0..1) coordinates, otherwise it
+    uses an absolute overlay.
     '''
+    # Unpack arguments (Pylint made me do this 😡)
+    x = point[0]
+    y = point[1]
     # Edge case handling for a black and white overlay
     if len(overlay.shape) == 2:
         overlay = cv2.applyColorMap(
             cv2.convertScaleAbs(overlay, alpha=0.03),
             cv2.COLORMAP_RAINBOW)
+    # Denormalize coordinates
+    if normcoords:
+        x = base.shape[1] * x
+        y = base.shape[0] * y
     # Overlay the image
     width = overlay.shape[1]
     height = overlay.shape[0]

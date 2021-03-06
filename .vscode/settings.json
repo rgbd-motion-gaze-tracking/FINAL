@@ -1,11 +1,14 @@
 {
     "cSpell.words": [
+        "Denormalize",
         "OPENCV",
+        "Pylint",
         "asanyarray",
         "asarray",
         "atexit",
         "dlib",
         "dlib's",
+        "imshow",
         "numpy",
         "pyrealsense",
         "writetofile"

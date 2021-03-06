@@ -1,11 +1,11 @@
-##
-# Tracker Core
-#
-# This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
-# MQP from the Worcester Polytechinc Institute.
-#
-# Copyright 2021 Nicholas Hollander <nhhollander@wpi.edu>
-#
+'''
+Tracker Core.
+
+This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
+MQP from the Worcester Polytechnic Institute.
+
+Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
+'''
 
 import os
 import pathlib
