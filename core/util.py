@@ -9,7 +9,10 @@ Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 
 import inspect
 from enum import Enum
+import math
+
 import cv2
+import numpy as np
 
 import debug
 
@@ -34,14 +37,17 @@ def log(msg, level=Levels.INFO):
     '''
     # Get the source file and line number
     current_frame = inspect.currentframe()
-    frame = inspect.getouterframes(current_frame, 2)[-1]
+    for frame in inspect.getouterframes(current_frame, 2):
+        pass
+        #print(f"Name {frame[3]}")
+    frame = inspect.getouterframes(current_frame, 2)[2]
     # Print a nice formatted message
     print(
-        f"[\033[38;5;245m{frame.filename[2:]}\033[0m:"
+        f"[\033[38;5;245m{frame.filename.split('/')[-1]}\033[0m:"
         f"\033[32m{frame.lineno}\033[0m:"
         f"\033[38;5;245m{frame.function}\033[0m]"
         f"[{level.value[1]}]"
-        f"{msg}")
+        f" {msg}\033[0m") # Trailing ANSI reset to clean up any dangling formatting
 
 ##--------------##
 ## Flow Control ##
@@ -55,6 +61,16 @@ class Abort(Exception):
         super(Abort, self).__init__(message)
         self.message = message
         self.level = level
+
+##-----------------##
+## General Helpers ##
+##-----------------##
+
+def bounds(min_, value, max_):
+    '''
+    Utility method for clamping `value` between `min_` and `max_` inclusive.
+    '''
+    return max(min_, min(max_, value))
 
 ##-----------------------##
 ## OpenCV Helper Methods ##
@@ -146,12 +162,39 @@ def draw_line(image, pt1, pt2, color=(0, 0, 0), thickness=1):
     cv2.line(image, (x1, y1), (x2, y2), (color), thickness)
 
 @debug.funcperf
+def draw_poly(image, points, color=(255, 0, 0)):
+    '''
+    Draw a polygon using normalized points.
+    '''
+    scaled_points = []
+    for point in points:
+        x = point[0] * image.shape[1]
+        y = point[1] * image.shape[0]
+        scaled_points.append([x, y])
+    points = np.asarray(scaled_points, np.int32).reshape((-1, 1, 2))
+    cv2.fillPoly(image, [points], color)
+
+@debug.funcperf
+def rotate(image, angle, newimage=False, interp=cv2.INTER_LINEAR, background=(0, 0, 0)):
+    '''
+    Rotate the image by the specified number of radians.
+    '''
+    if newimage:
+        image = image.copy()
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rotation_matrix = cv2.getRotationMatrix2D(image_center, math.degrees(angle), 1.0)
+    return cv2.warpAffine(image, rotation_matrix, image.shape[1::-1], flags=interp, borderValue=background)
+
+
+@debug.funcperf
 def sample(image, x, y):
     '''
     Return a sample of the target image from the normalized coordinates (x, y).
     '''
     x = int(image.shape[1] * x)
+    x = min(image.shape[1] - 1, x) # Fix for edge condition
     y = int(image.shape[0] * y)
+    y = min(image.shape[0] - 1, y) # Fix for edge condition
     return image[y, x]
 
 @debug.funcperf

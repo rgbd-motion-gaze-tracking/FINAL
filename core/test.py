@@ -9,8 +9,13 @@ Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 '''
 
 import trackercore
+import util
 
 trackercore.init()
 
 while True:
-    trackercore.loop_once()
+    try:
+        trackercore.loop_once()
+    except KeyboardInterrupt:
+        util.log("\033[Terminated by user")
+        break
