@@ -79,7 +79,12 @@ def funcperf_report():
     line("Function", "Tot. Exec", "Calls", "Avg. Exec")
     line('-'*50, '-'*50, '-'*50, '-'*50) # Adds lines
     asarray = [
-        (a, funcperf_data[a][0], funcperf_data[a][1], funcperf_data[a][0]/funcperf_data[a][1])
+        (
+            a,
+            funcperf_data[a][0],
+            funcperf_data[a][1],
+            funcperf_data[a][0]/funcperf_data[a][1]
+        )
         for a in funcperf_data]
     for s in sorted(asarray, key=lambda a: a[3], reverse=True):
         line(
@@ -92,12 +97,9 @@ def funcperf_report():
     # Write report to file
     if FUNCPERF_WRITETOFILE:
         handle = open("/tmp/funcperf.csv", "w")
-        for a in funcperf_data:
-            handle.write(
-                f"{a},"
-                f"{funcperf_data[a][0]},"
-                f"{funcperf_data[a][1]},"
-                f"{funcperf_data[a][0]/funcperf_data[a][1]}\n")
+        for a in asarray:
+            a = [str(b) for b in a]
+            handle.write(",".join(a) + "\n")
         handle.close()
 
 # Register the performance output
