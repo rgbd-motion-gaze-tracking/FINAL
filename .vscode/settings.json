@@ -8,8 +8,12 @@
         "atexit",
         "dlib",
         "dlib's",
+        "imread",
         "imshow",
+        "imwrite",
+        "initbg",
         "interp",
+        "keras",
         "numpy",
         "pyrealsense",
         "writetofile"

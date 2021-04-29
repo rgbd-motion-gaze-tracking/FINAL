@@ -13,6 +13,7 @@ a ROS node. `ui` provides a user interface for the core module.
 
 Documentation for each component can be found at the following links:
  - [Core Documentation](./core/README.md)
+ - [Trainer Documentation](./trainer/README.md)
  - [ROS Node Documentation](./rosnode/README.md)
  - [UI Documentation](./ui/README.md)
 

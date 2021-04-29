@@ -10,11 +10,12 @@ Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 import inspect
 from enum import Enum
 import math
+import unicodedata
 
 import cv2
 import numpy as np
 
-import debug
+from . import debug
 
 ##---------##
 ## Logging ##
@@ -204,3 +205,19 @@ def normalize_coordinates(image, x, y):
     ones.
     '''
     return (x/image.shape[1], y/image.shape[0])
+
+##------------------------##
+## Unicode Helper Methods ##
+##------------------------##
+
+def human_name(char):
+    '''
+    Return a basic human readable representation of the given character. For
+    example, "B" will be returned as is, but " " will be returned as "SPACE".
+    '''
+    cat = unicodedata.category(char)
+    # Letters and numbers can be returned as is
+    if "L" in cat or "":
+        return char
+    # Return unicode name for other characters
+    return unicodedata.name(char)

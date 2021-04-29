@@ -16,15 +16,14 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 
-import debug
-import util
+from . import debug
+from . import util
 
 # Tracker data
 data = {
     "status": "NOT_LOADED",
     "result": {
-        "left_eye": None,
-        "right_eye": None
+
     }
 }
 # Configuration Options
@@ -51,14 +50,34 @@ def loop_once():
     if data['status'] != "READY":
         util.log(f"Not Looping - State is not READY ({data['status']})", level=util.Levels.ERROR)
         return
+    data['result'] = { # Reset result
+        "valid": True,
+        "face_depth": 0,
+        "face_x": 0,
+        "face_y": 0,
+        "face_angle": 0,
+        "depth_diff": 0,
+        "left_eye": {
+            "angle": 0,
+            "x": 0,
+            "y": 0
+        },
+        "right_eye": {
+            "angle": 0,
+            "x": 0,
+            "y": 0
+        }
+    }
     try:
         acquire_image()
         preprocess_images()
-        find_face()
+        process_face()
         debug_draw_features()
         extract_eyes()
+        # TODO: Insert tensorflow interpolation here
     except util.Abort as e:
         util.log(f"Processing aborted: {e.message}", e.level)
+        data['result']['valid'] = False
 
     if config['debug']['show_final']:
         cv2.imshow("Debug: Color", data['color_frame_debug'])
@@ -96,7 +115,9 @@ def init():
         return
     data['face_predictor'] = dlib.shape_predictor(predictor_path)
 
-    util.log("Initialization Complete!")
+    # TODO: INITIALIZE TENSORFLOW HERE
+
+    util.log("Tracker Core Initialization Complete!")
     data['status'] = "READY"
 
 
@@ -139,7 +160,7 @@ def preprocess_images():
         data['depth_frame_debug'] = data['depth_color'].copy()
 
 @debug.funcperf
-def find_face():
+def process_face():
     '''
     Use `dlib` to find faces in the frame. If no face is found, processing will
     stop after this function. If multiple faces are found, only one will be
@@ -202,6 +223,19 @@ def find_face():
         data['named_features']['nose'][4:8])))
     data['named_features']['chin'] = derive_avg(
         data['named_features']['jaw'][4:13])
+    data['named_features']['left_eye_c'] = derive_avg(
+        data['named_features']['left_eye'])
+    data['named_features']['right_eye_c'] = derive_avg(
+        data['named_features']['right_eye'])
+    # Get result position components
+    data['result']['face_depth'] = data['named_features']['glabella'][3]
+    data['result']['face_x'] = data['named_features']['glabella'][0]
+    data['result']['face_y'] = data['named_features']['glabella'][1]
+    # Calculate angular information
+    dx = data['named_features']['left_eye_c'][0] - data['named_features']['right_eye_c'][0]
+    dy = data['named_features']['left_eye_c'][1] - data['named_features']['right_eye_c'][1]
+    data['result']['face_angle'] = math.atan2(dy, dx)
+    data['result']['depth_diff'] = data['named_features']['right_eye_c'][2] - data['named_features']['left_eye_c'][2]
 
 
 @debug.funcperf
@@ -246,6 +280,8 @@ def debug_draw_features():
     draw_x('left_cheek')
     draw_x('right_cheek')
     draw_x('chin')
+    draw_x('left_eye_c')
+    draw_x('right_eye_c')
 
 @debug.funcperf
 def extract_eyes():
@@ -254,7 +290,7 @@ def extract_eyes():
     '''
     @debug.funcperf
     def geteye(eye):
-        # Get extents of eye box
+        # Get extents of eye box w/ padding
         min_x = min([a[0] for a in data['named_features'][eye]]) - 0.0
         max_x = max([a[0] for a in data['named_features'][eye]]) + 0.0
         min_y = min([a[1] for a in data['named_features'][eye]]) - 0.0
@@ -279,6 +315,7 @@ def extract_eyes():
         # Extract the eye from the image
         extracted = util.crop(data['color_frame'], min_x, min_y, max_x, max_y).copy()
         # Calculate eye angle
+        # TODO: Math is off a bit, needs to be adjusted for crop aspect ratio
         a = points[0]
         b = points[3]
         dx = b[0] - a[0]
@@ -286,6 +323,7 @@ def extract_eyes():
         angle = math.atan2(dy, dx)
         # Mask the area surrounding the eye
         eye_mask_color = (0, 255, 0)
+        #cv2.imwrite("/tmp/debug0.png", extracted)
         util.draw_poly(extracted, invert_points, color=eye_mask_color)
         # Get eye averages for pupil location. The eye average for pupil
         # location system works in two passes. The first pass determines the
@@ -295,6 +333,7 @@ def extract_eyes():
         # of those pixels, which is assumed to be roughly equivalent to the
         # center of the pupil/iris (or at the very least has a linear
         # relationship to the actual center point)
+        #cv2.imwrite("/tmp/debug1.png", extracted)
         extracted_g = cv2.cvtColor(extracted, cv2.COLOR_BGR2GRAY)
         count = 0
         graysum = 0
@@ -308,12 +347,7 @@ def extract_eyes():
         if count > 0:
             avg = graysum / count
         else:
-            return {
-                "angle": 0,
-                "x": 0,
-                "y": 0,
-                "valid": False
-            }
+            raise util.Abort(f"Eye {eye} has 0 unmasked pixels (A)", level=util.Levels.WARN)
         x_sum = 0
         y_sum = 0
         count = 0
@@ -324,17 +358,17 @@ def extract_eyes():
                         x_sum += x
                         y_sum += y
                         count += 1
+                    #    extracted[y, x] = (0, 0, 0)
+                    #else:
+                    #    extracted[y, x] = (255, 255, 255)
+        #cv2.imwrite("/tmp/debug2.png", extracted)
         if count > 0:
             x_avg = x_sum / count / extracted.shape[1]
             y_avg = y_sum / count / extracted.shape[0]
         else:
-            return {
-                "angle": 0,
-                "x": 0,
-                "y": 0,
-                "valid": False
-            }
+            raise util.Abort(f"Eye {eye} has 0 unmasked pixels (B)", level=util.Levels.WARN)
         util.draw_line(extracted, (0, 0), (x_avg, y_avg), color=(255, 0, 255))
+        #cv2.imwrite("/tmp/debug3.png", extracted)
         # Debug
         if config['debug']['daw_eye_boxes']:
             util.draw_rectangle(data['color_frame_debug'], (min_x, min_y), (max_x, max_y), (255, 0, 0))
@@ -344,16 +378,19 @@ def extract_eyes():
         return {
             "angle": angle,
             "x": x_avg,
-            "y": y_avg,
-            "valid": True
+            "y": y_avg
         }
-
     left = geteye("left_eye")
     right = geteye("right_eye")
-    data['result']['left_eye'] = left
-    data['result']['right_eye'] = right
-    if not left['valid'] or not right['valid']:
-        util.log("Invalid eye data! ["
-            f"L: {'Valid' if left['valid'] else 'Invalid'} "
-            f"R: {'Valid' if right['valid'] else 'Invalid'}]",
-            level=util.Levels.WARN)
+    data['result']['left_eye']['angle'] = left['angle']
+    data['result']['left_eye']['x'] = left['x']
+    data['result']['left_eye']['y'] = left['y']
+    data['result']['right_eye']['angle'] = right['angle']
+    data['result']['right_eye']['x'] = right['x']
+    data['result']['right_eye']['y'] = right['y']
+
+@debug.funcperf
+def estimate_screen_pos():
+    '''
+    Not yet implemented
+    '''
