@@ -2,7 +2,7 @@
 '''
 Trainer Test.
 
-This model tests the tensorflow module and generates an accuracy heatmap.
+This model tests the tensorflow model and generates an accuracy heatmap.
 
 This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
 MQP from the Worcester Polytechnic Institute.
@@ -10,7 +10,6 @@ MQP from the Worcester Polytechnic Institute.
 Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 '''
 
-import tensorflow as tf
 import numpy as np
 import cv2
 
@@ -44,9 +43,6 @@ def init():
     # Create the output window
     data['window'] = np.zeros((RESOLUTION_Y, RESOLUTION_X, 3), np.uint8)
 
-    # Load the model
-    data['model'] = tf.keras.models.load_model("model")
-
 def run():
     '''
     Main run loop. This is where the data gathering happens.
@@ -54,30 +50,15 @@ def run():
     last = []
     while True:
         # Take a reading
-        trackercore.loop_once()
+        result = trackercore.loop_once()
 
         # Clear the window
         cv2.rectangle(data['window'], (0, 0), (RESOLUTION_X, RESOLUTION_Y), (255, 255, 255), -1)
 
-        # Predict
-        prediction = data['model'].predict(
-            [[
-                float(trackercore.data['result']['face_depth']),
-                float(trackercore.data['result']['face_x']),
-                float(trackercore.data['result']['face_y']),
-                float(trackercore.data['result']['face_angle']),
-                float(trackercore.data['result']['depth_diff']),
-                float(trackercore.data['result']['left_eye']['angle']),
-                float(trackercore.data['result']['left_eye']['x']),
-                float(trackercore.data['result']['left_eye']['y']),
-                float(trackercore.data['result']['right_eye']['angle']),
-                float(trackercore.data['result']['right_eye']['x']),
-                float(trackercore.data['result']['right_eye']['y'])
-            ]]
-        )
+        prediction = result['gaze_prediction']
 
-        predict_x = int(prediction[0][0] * RESOLUTION_X)
-        predict_y = int(prediction[0][1] * RESOLUTION_Y)
+        predict_x = int(prediction['x'] * RESOLUTION_X)
+        predict_y = int(prediction['y'] * RESOLUTION_Y)
 
         last.append((predict_x, predict_y))
         last = last[-10:]

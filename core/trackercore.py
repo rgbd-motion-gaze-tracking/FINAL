@@ -15,6 +15,7 @@ import dlib
 import pyrealsense2 as rs
 import numpy as np
 import cv2
+import tensorflow as tf
 
 from . import debug
 from . import util
@@ -23,12 +24,13 @@ from . import util
 data = {
     "status": "NOT_LOADED",
     "result": {
-
+        # Populated by loop_once and actions
     }
 }
 # Configuration Options
 config = {
     "face_detection_scale_factor": 0.25,
+    "enable_prediction": True,
     "debug": {
         "create_debug_images": True,
         "draw_facial_features": True,
@@ -37,6 +39,9 @@ config = {
         "show_final": True
     }
 }
+
+# Project Directory
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 ##-----------##
 ## Main Loop ##
@@ -66,6 +71,10 @@ def loop_once():
             "angle": 0,
             "x": 0,
             "y": 0
+        },
+        "gaze_prediction": {
+            "x": 0,
+            "y": 0
         }
     }
     try:
@@ -74,7 +83,7 @@ def loop_once():
         process_face()
         debug_draw_features()
         extract_eyes()
-        # TODO: Insert tensorflow interpolation here
+        estimate_screen_pos()
     except util.Abort as e:
         util.log(f"Processing aborted: {e.message}", e.level)
         data['result']['valid'] = False
@@ -83,6 +92,8 @@ def loop_once():
         cv2.imshow("Debug: Color", data['color_frame_debug'])
         cv2.imshow("Debug: Depth", data['depth_frame_debug'])
         cv2.waitKey(delay=1)
+
+    return data['result']
 
 ##----------------------##
 ## Main Process Methods ##
@@ -115,7 +126,9 @@ def init():
         return
     data['face_predictor'] = dlib.shape_predictor(predictor_path)
 
-    # TODO: INITIALIZE TENSORFLOW HERE
+    if config['enable_prediction']:
+        util.log("Loading TensorFlow model...")
+        data['tf_model'] = tf.keras.models.load_model(f"{DIR_PATH}/model")
 
     util.log("Tracker Core Initialization Complete!")
     data['status'] = "READY"
@@ -315,7 +328,7 @@ def extract_eyes():
         # Extract the eye from the image
         extracted = util.crop(data['color_frame'], min_x, min_y, max_x, max_y).copy()
         # Calculate eye angle
-        # TODO: Math is off a bit, needs to be adjusted for crop aspect ratio
+        # This math is off a bit, it doesn't account for the eye image aspect ratio
         a = points[0]
         b = points[3]
         dx = b[0] - a[0]
@@ -392,5 +405,22 @@ def extract_eyes():
 @debug.funcperf
 def estimate_screen_pos():
     '''
-    Not yet implemented
+    Perform gaze target estimation using the default model.
     '''
+    prediction = data['tf_model'].predict(
+        [[
+            float(data['result']['face_depth']),
+            float(data['result']['face_x']),
+            float(data['result']['face_y']),
+            float(data['result']['face_angle']),
+            float(data['result']['depth_diff']),
+            float(data['result']['left_eye']['angle']),
+            float(data['result']['left_eye']['x']),
+            float(data['result']['left_eye']['y']),
+            float(data['result']['right_eye']['angle']),
+            float(data['result']['right_eye']['x']),
+            float(data['result']['right_eye']['y'])
+        ]]
+    )
+    data['result']['gaze_prediction']['x'] = prediction[0][0]
+    data['result']['gaze_prediction']['y'] = prediction[0][1]
