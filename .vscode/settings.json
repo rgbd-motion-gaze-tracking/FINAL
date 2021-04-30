@@ -16,6 +16,7 @@
         "keras",
         "numpy",
         "pyrealsense",
+        "rospy",
         "writetofile"
     ],
     "python.linting.pylintArgs": [

@@ -1,0 +1,3 @@
+[MASTER]
+# This magical line allows pylint to find and validate ROS
+init-hook="import os; import sys; sos.path.append(os.environ['ROS_PACKAGE_PATH'].split(';'))"

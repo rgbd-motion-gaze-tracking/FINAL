@@ -13,7 +13,7 @@ Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 import numpy as np
 import cv2
 
-from core import trackercore, util, debug
+from core import trackercore, util
 
 RESOLUTION_X = 1920
 RESOLUTION_Y = 1080

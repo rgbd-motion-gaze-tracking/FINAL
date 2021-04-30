@@ -43,6 +43,25 @@ config = {
 # Project Directory
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
+##------------------##
+## Control Commands ##
+##------------------##
+
+def command_set_laserpower(power):
+    '''
+    Sets the realsense laser power to the specified value.
+    '''
+    power_range = data['rs_depthsensor'].get_option_range(rs.option.laser_power)
+    if power == "default":
+        util.log(f"Laser power set to default [{power_range.default}]", level=util.Levels.DEBUG)
+        data['rs_depthsensor'].set_option(rs.option.laser_power, power_range.default)
+        return
+    if power_range.min > int(power) > power_range.max:
+        util.log(f"Laser power value {power} is out of range [{power_range.min}-{power_range.max}]", level=util.Levels.ERROR)
+        return
+    util.log(f"Laser power changed to {power}", level=util.Levels.DEBUG)
+    data['rs_depthsensor'].set_option(rs.option.laser_power, int(power))
+
 ##-----------##
 ## Main Loop ##
 ##-----------##
