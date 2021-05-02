@@ -15,7 +15,7 @@ Written in 2021 by Nicholas Hollander <nhhollander@wpi.edu>
 import rospy
 import os
 import sys
-from eye_head_tracker.msg import EyeInfo, EyePoint, FaceInfo, GazeInfo, Command
+from eye_head_tracker.msg import EyeInfo, EyePoint, FaceInfo, GazeInfo, Command, LogMessage
 
 # I don't know how to make the import work without this line :(
 sys.path.append('/home/nicholas/Documents/wpi_files/MQP/THIS_IS_THE_FINAL_TRACKER')
@@ -45,12 +45,14 @@ def tracker():
     pub_eye = rospy.Publisher('tracker_eyes', EyeInfo, queue_size=10)
     pub_face = rospy.Publisher('tracker_face', FaceInfo, queue_size=10)
     pub_gaze = rospy.Publisher('tracker_gaze', GazeInfo, queue_size=10)
+    pub_log = rospy.Publisher('tracker_log', LogMessage, queue_size=10)
     rospy.Subscriber('tracker_cmd', Command, command_handler)
     rospy.init_node('tracker', anonymous=True)
     # Disable all debug options that I accidentally left enabled
     for dbg in trackercore.config['debug']:
         if trackercore.config['debug'][dbg] is True:
             trackercore.config['debug'][dbg] = False
+    trackercore.util.LOG_CB = lambda msg : pub_log.publish(msg)
     trackercore.init()
     # Track until the heatdeath of the universe and/or the program is terminated
     while not rospy.is_shutdown():

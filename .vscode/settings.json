@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "CONV",
         "Denormalize",
         "OPENCV",
         "Popen",
@@ -16,6 +17,7 @@
         "interp",
         "keras",
         "numpy",
+        "pyqt",
         "pyrealsense",
         "rospy",
         "writetofile"

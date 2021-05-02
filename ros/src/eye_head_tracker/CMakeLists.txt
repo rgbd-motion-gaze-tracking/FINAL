@@ -53,6 +53,7 @@ add_message_files(
   EyePoint.msg
   FaceInfo.msg
   GazeInfo.msg
+  LogMessage.msg
   Command.msg
 )
 

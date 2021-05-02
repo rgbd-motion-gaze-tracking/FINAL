@@ -21,6 +21,10 @@ from . import debug
 ## Logging ##
 ##---------##
 
+# Optional function to be called every time a message is logged.
+# Accepts one parameter, the ANSI formatted string.
+LOG_CB = None
+
 class Levels(Enum):
     '''
     Log Level Documentation.
@@ -43,12 +47,15 @@ def log(msg, level=Levels.INFO):
         #print(f"Name {frame[3]}")
     frame = inspect.getouterframes(current_frame, 2)[2]
     # Print a nice formatted message
-    print(
+    message = (
         f"[\033[38;5;245m{frame.filename.split('/')[-1]}\033[0m:"
         f"\033[32m{frame.lineno}\033[0m:"
         f"\033[38;5;245m{frame.function}\033[0m]"
         f"[{level.value[1]}]"
-        f" {msg}\033[0m") # Trailing ANSI reset to clean up any dangling formatting
+        f" {msg}\033[0m") # Trailing ANSI reset to clean up any dangling formattin
+    print(message)
+    if LOG_CB is not None:
+        LOG_CB(message)
 
 ##--------------##
 ## Flow Control ##

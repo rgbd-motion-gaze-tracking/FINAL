@@ -1,0 +1,112 @@
+/* CSS for the terminal */
+* {
+    font-family: monospace;
+}
+
+.ansi1 {
+    font-weight: bold;
+}
+.ansi3 {
+    font-style: italic;
+}
+.ansi4 {
+    text-decoration: underline;
+}
+
+.ansi30 {
+    color: black;
+}
+.ansi31 {
+    color: rgb(170,0,0);
+}
+.ansi32 {
+    color: rgb(0,170,0);
+}
+.ansi33 {
+    color: rgb(170,85,0);
+}
+.ansi34 {
+    color: rgb(0,0,170);
+}
+.ansi35 {
+    color: rgb(170,0,170);
+}
+.ansi36 {
+    color: rgb(0,170,170);
+}
+.ansi37 {
+    color: rgb(170,170,170);
+}
+.ansi90 {
+    color: rgb(85,85,85);
+}
+.ansi91 {
+    color: rgb(255,85,85);
+}
+.ansi92 {
+    color: rgb(85,255,85);
+}
+.ansi93 {
+    color: rgb(255,255,85);
+}
+.ansi94 {
+    color: rgb(85,85,255);
+}
+.ansi95 {
+    color: rgb(255,85,255);
+}
+.ansi96 {
+    color: rgb(85,255,255);
+}
+.ansi97 {
+    color: rgb(255,255,255);
+}
+
+.ansi40 {
+    background-color: black;
+}
+.ansi41 {
+    background-color: rgb(170,0,0);
+}
+.ansi42 {
+    background-color: rgb(0,170,0);
+}
+.ansi43 {
+    background-color: rgb(170,85,0);
+}
+.ansi44 {
+    background-color: rgb(0,0,170);
+}
+.ansi45 {
+    background-color: rgb(170,0,170);
+}
+.ansi46 {
+    background-color: rgb(0,170,170);
+}
+.ansi47 {
+    background-color: rgb(170,170,170);
+}
+.ansi100 {
+    background-color: rgb(85,85,85);
+}
+.ansi101 {
+    background-color: rgb(255,85,85);
+}
+.ansi102 {
+    background-color: rgb(85,255,85);
+}
+.ansi103 {
+    background-color: rgb(255,255,85);
+}
+.ansi104 {
+    background-color: rgb(85,85,255);
+}
+.ansi105 {
+    background-color: rgb(255,85,255);
+}
+.ansi106 {
+    background-color: rgb(85,255,255);
+}
+.ansi107 {
+    background-color: rgb(255,255,255);
+}
