@@ -15,9 +15,12 @@ import random
 
 import tensorflow as tf
 import numpy as np
+import subprocess
 
 # Comment this line out of you're not cool and bought an nvidia gpu
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+DIR = os.path.dirname(os.path.realpath(__file__))
 
 BATCH_SIZE = 64
 
@@ -93,6 +96,10 @@ model.fit(x=train_examples, y=train_labels, epochs=1000)
 # Test the model
 print("Testing model")
 model.evaluate(x=test_examples, y=test_labels)
+
+print("Making model backup")
+os.chdir(f"{DIR}")
+subprocess.run(f"tar -cvf model_backup.tar model")
 
 print("Saving model")
 model.save("model")

@@ -1,6 +1,7 @@
 /* CSS for the terminal */
 * {
     font-family: monospace;
+    white-space: pre;
 }
 
 .ansi1 {

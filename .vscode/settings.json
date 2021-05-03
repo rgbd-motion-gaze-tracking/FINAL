@@ -8,6 +8,7 @@
         "asanyarray",
         "asarray",
         "atexit",
+        "chdir",
         "dlib",
         "dlib's",
         "imread",
@@ -19,6 +20,7 @@
         "numpy",
         "pyqt",
         "pyrealsense",
+        "roslaunch",
         "rospy",
         "writetofile"
     ],

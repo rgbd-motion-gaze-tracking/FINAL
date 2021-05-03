@@ -16,6 +16,7 @@ import rospy
 import sys
 import ansi2html
 import os
+import re
 from PySide6.QtCore import Qt, QFile, Signal
 from PySide6.QtWidgets import QWidget, QApplication, QLabel, QPushButton
 from PySide6.QtUiTools import QUiLoader
@@ -256,6 +257,7 @@ class LogListener(QWidget):
 
     def handle(self, data):
         message = ANSI_CONV.convert(data.message, full=False)
+        message = re.sub("[\r\n]+$", "", message)
         terminal['lines'].append(message)
         terminal['lines'] = terminal['lines'][-1000:]
         document = f'''

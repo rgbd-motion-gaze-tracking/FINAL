@@ -1,0 +1,4 @@
+<launch>
+    <node name="tracker" pkg="eye_head_tracker" type="tracker.py" />
+    <node name="test_node" pkg="eye_head_tracker" type="test_node2.py" />
+</launch>
