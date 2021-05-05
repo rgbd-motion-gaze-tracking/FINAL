@@ -69,6 +69,7 @@ def init():
     for dbg in trackercore.config['debug']:
         if trackercore.config['debug'][dbg] is True:
             trackercore.config['debug'][dbg] = False
+    trackercore.config['enable_prediction'] = False
 
     trackercore.init()
 

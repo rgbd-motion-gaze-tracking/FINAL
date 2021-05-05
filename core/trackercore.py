@@ -1,6 +1,50 @@
 '''
 Tracker Core.
 
+This is the main component of the eye tracking system, where all of the
+processing and derivation operations take place. In order to effectively
+implement it into your application, there are some things you need to
+know about.
+
+Configuration:
+| Option                      | Description                               |
+|-----------------------------|-------------------------------------------|
+| face_detection_scale_factor | Increases performance by downscaling the  |
+|                             | source image before the face detection    |
+|                             | algorithm is applied. This reduces the    |
+|                             | maximum distance from the camera the      |
+|                             | operator will be detected at.             |
+|-----------------------------|-------------------------------------------|
+| enable_prediction           | Enables or disables the tensorflow based  |
+|                             | gaze prediction stage.                    |
+|-----------------------------|-------------------------------------------|
+| debug.create_debug_images   | Duplicates the source and processed       |
+|                             | images and allows the drawing of debug    |
+|                             | information. This option must be set to   |
+|                             | `True` to enable the following debug.*    |
+|                             | options.                                  |
+|-----------------------------|-------------------------------------------|
+| debug.draw_facial_features  | Overlays the result of the 68 point       |
+|                             | facial feature detection algorithm onto   |
+|                             | the debug image.                          |
+|-----------------------------|-------------------------------------------|
+| debug.draw_eye_boxes        | Draws boxes around the operators eyes.    |
+|-----------------------------|-------------------------------------------|
+| debug.show_processed_eyes   | Creates a new window to show the result   |
+|                             | of the eye extraction and processing      |
+|                             | algorithm.                                |
+|-----------------------------|-------------------------------------------|
+| debug.show_final            | Creates a new window to show the debug    |
+|                             | images after each invocation of           |
+|                             | `loop_once()`.                            |
+|-----------------------------|-------------------------------------------|
+
+If you're integrating this into another application, you should make sure
+that all of the `debug.*` options are set to `False`. If you're trying to
+train a model, or don't need the gaze estimates, you should set
+`enable_prediction` to `False`.
+s
+
 This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
 MQP from the Worcester Polytechnic Institute.
 
