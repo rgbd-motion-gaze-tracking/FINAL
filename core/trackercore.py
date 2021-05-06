@@ -43,7 +43,6 @@ If you're integrating this into another application, you should make sure
 that all of the `debug.*` options are set to `False`. If you're trying to
 train a model, or don't need the gaze estimates, you should set
 `enable_prediction` to `False`.
-s
 
 This file is part of the Robotic Teleoperation via Motion and Gaze Tracking
 MQP from the Worcester Polytechnic Institute.
